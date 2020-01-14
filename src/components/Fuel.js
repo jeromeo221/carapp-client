@@ -16,6 +16,11 @@ const Fuel = (props) => {
     const [deleteFuelId, setDeleteFuelId] = useState(null);
     const [toEditFuel, setToEditFuel] = useState(null);
     const [isLoadingFuel, setIsLoadingFuel] = useState(true);
+        
+    //Pagination
+    const [page, setPage] = useState(1);
+    const [limit] = useState(5);
+    const [totalPages, setTotalPages] = useState(null);
 
     //Fuel Fields
     const dateField = useRef(null);
@@ -28,19 +33,31 @@ const Fuel = (props) => {
 
     useEffect(() => {
         const getFuel = async () => {
-            const response = await axios.get(process.env.REACT_APP_BACKEND_ENDPOINT + `/fuels`, {
-                params: {
-                    vehicleId: vehicleId
-                }
-            });
-            setFuels(response.data.data);
-            setIsLoadingFuel(false);
+            try {
+                const response = await axios.get(process.env.REACT_APP_BACKEND_ENDPOINT + `/fuels`, {
+                    params: {
+                        vehicleId,
+                        page,
+                        limit
+                    }
+                });
+                if(response.data.success){
+                    setFuels(response.data.data);
+                    setTotalPages(response.data.options.totalPages);
+                } else {
+                    setErrors(response.data.error);
+                }                
+            } catch(err){
+                setErrors(err.message);
+            } finally {
+                setIsLoadingFuel(false);
+            }
         }
         if(transUpdate){
             getFuel();    
-        }
-        setTransUpdate(false);  
-    }, [vehicleId, transUpdate]);
+            setTransUpdate(false);  
+        }        
+    }, [vehicleId, transUpdate, limit, page]);
 
     const confirmedDeleteFuel = async () => {
         try {
@@ -257,6 +274,58 @@ const Fuel = (props) => {
         setIsAddFuel(true);
         setAddFuelErrors(null);
     }
+
+    const displayPagination = () => {
+        if(totalPages && totalPages > 1 && !isLoadingFuel){
+            let downButton = "";
+            let upButton = "";
+            if(page === 1) downButton = " disabled";
+            if(page === totalPages) upButton = " disabled";
+
+            return (
+                
+                    <ul className="pagination pagination-sm" align="right">
+                        <li key="page-0" className={"page-item" + downButton}>
+                            <button className="page-link" onClick={() => handlePaginateButton(page-1)}>&laquo;</button>
+                        </li>
+                        {displayPaginationPages()}
+                        <li key={"page-"+ totalPages+1} className={"page-item" + upButton}>
+                            <button className="page-link" onClick={() => handlePaginateButton(page+1)}>&raquo;</button>
+                        </li>
+                    </ul>
+                
+            )
+        } else {
+            return (
+                null
+            )
+        }
+    }
+
+    const displayPaginationPages = () => {
+        let pageNumbers = [];
+        for(let i = 1; i <= totalPages; i++){
+            let buttonActive = "";
+            if(i === page) buttonActive = " active";
+            const pageObj = {
+                i,
+                buttonActive
+            }
+            pageNumbers.push(pageObj);
+        }
+        return pageNumbers.map(pageObj => {
+            return (
+                <li key={"page" + pageObj.i} className={"page-item" + pageObj.buttonActive}>
+                    <button className="page-link"  onClick={() => handlePaginateButton(pageObj.i)}>{pageObj.i}</button>
+                </li>
+            )
+        });
+    }
+
+    const handlePaginateButton = (newPage) => {
+        setPage(newPage);
+        setTransUpdate(true);
+    }
     
     return (
         <Fragment>
@@ -268,7 +337,12 @@ const Fuel = (props) => {
                 <p>Are you sure you want to delete this fuel transaction? This action cannot be undone.</p>
             </Modal>
             <div className="mt-4 row">
-                <h3>Fuel Transactions</h3>
+                <div className="mr-auto">
+                    <h3>Fuel Transactions</h3>
+                </div>                
+                <div>
+                    {displayPagination()}
+                </div>                
             </div>
             <div className="mt-2 row">
                 {errors ?
@@ -277,34 +351,42 @@ const Fuel = (props) => {
                     {errors}
                 </div>) : null}
                 {!isLoadingFuel ? 
-                (<table className="table table-hover">
-                    <thead>
-                        <tr>
-                            <th>Date</th>
-                            <th>Odometer</th>
-                            <th>Volume</th>
-                            <th>Price</th>
-                            <th>Cost</th>
-                            <th>Full Tank?</th>
-                            <th>Missed Fillup?</th>
-                            <th>Mileage</th>
-                            <th>Price per Km</th>
-                            <th>Options</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {displayFuelList()}
-                        {isAddFuel ? (displayAddFuel()) : null}
-                        {!isAddFuel ? (<tr className="table-primary">
-                            <td align="left" colSpan="10">
-                                <button type="button" className="btn btn-primary btn-sm" onClick={handleDisplayFuelAdd}>+</button>
-                            </td>
-                        </tr>) : null}
-                    </tbody>
-                </table>) :
+                (<Fragment>
+                    <table className="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>Date</th>
+                                <th>Odometer</th>
+                                <th>Volume</th>
+                                <th>Price</th>
+                                <th>Cost</th>
+                                <th>Full Tank?</th>
+                                <th>Missed Fillup?</th>
+                                <th>Mileage</th>
+                                <th>Price per Km</th>
+                                <th>Options</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {displayFuelList()}
+                            {isAddFuel ? (displayAddFuel()) : null}
+                            {!isAddFuel ? (<tr className="table-primary">
+                                <td align="left" colSpan="10">
+                                    <button type="button" className="btn btn-primary btn-sm" onClick={handleDisplayFuelAdd}>+</button>
+                                </td>
+                            </tr>) : null}
+                        </tbody>
+                    </table>
+                </Fragment>) :
                 (
                     <div><Spinner/></div>
                 )}
+            </div>
+            <div className="mt-2 row">
+                <div className="mr-auto"/>
+                <div>
+                    {displayPagination()}
+                </div>
             </div>
         </Fragment>
     )
