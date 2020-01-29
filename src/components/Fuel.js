@@ -19,7 +19,7 @@ const Fuel = (props) => {
         
     //Pagination
     const [page, setPage] = useState(1);
-    const [limit] = useState(5);
+    const [limit] = useState(10);
     const [totalPages, setTotalPages] = useState(null);
 
     //Fuel Fields
