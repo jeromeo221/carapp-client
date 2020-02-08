@@ -2,8 +2,9 @@ import React, { useState, useEffect, Fragment } from 'react';
 import { Link } from 'react-router-dom';
 import axios from 'axios';
 import Fuel from './Fuel';
-import Modal from './Modal';
-import Spinner from './Spinner';
+import Modal from '../containers/Modal';
+import Spinner from '../containers/Spinner';
+import useGlobalState from '../hooks/useGlobalState';
 
 const Vehicle = (props) => {
     
@@ -12,18 +13,23 @@ const Vehicle = (props) => {
     const [errors, setErrors] = useState(null);
     const [isVehicleLoading, setIsVehicleLoading] = useState(true);
     const [vehicleLoadError, setVehicleLoadError] = useState(null);
+    const {token} = useGlobalState().auth;
 
     useEffect(() => {
         const getVehicleDetails = async () => {
             try {
-                const response = await axios.get(process.env.REACT_APP_BACKEND_ENDPOINT + `/vehicles/${id}`);
+                const response = await axios.get(`${process.env.REACT_APP_BACKEND_ENDPOINT}/vehicles/${id}`, {
+                    headers: {
+                        Authorization: `Bearer ${token}`
+                    }
+                });
                 if(response.data.success){
                     setVehicleLoadError(null);
                     setDetail(response.data.data);
                 } else {
                     setVehicleLoadError(response.data.error);                    
                     setDetail(null);                
-                }
+                }        
             } catch(err){
                 setVehicleLoadError(err.message);
             } finally {
@@ -31,7 +37,7 @@ const Vehicle = (props) => {
             }
         }
         getVehicleDetails();
-    }, [id]);
+    }, [id, token]);    
 
     const displayDetail = () => {
         if(detail && !vehicleLoadError){
@@ -70,7 +76,11 @@ const Vehicle = (props) => {
 
     const deleteVehicle = async (id) => {
         try {
-            const result = await axios.delete(process.env.REACT_APP_BACKEND_ENDPOINT + `/vehicles/${id}`);
+            const result = await axios.delete(process.env.REACT_APP_BACKEND_ENDPOINT + `/vehicles/${id}`, {
+                headers: {
+                    Authorization: `Bearer ${token}`
+                }
+            });
             if(result.data.success){
                 props.history.push(`/`);
             } else {

@@ -1,20 +1,30 @@
-import React, { useState, useEffect, Fragment } from 'react';
+import React, { useState, Fragment, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import axios from 'axios';
-import Spinner from './Spinner';
+import Spinner from '../containers/Spinner';
+import useGlobalState from '../hooks/useGlobalState';
 
 const Dashboard = (props) => {
 
     const [isVehicleLoading, setIsVehicleLoading] = useState(true);
     const [vehicleLoadError, setVehicleLoadError] = useState(null);
     const [vehicles, setVehicles] = useState(null);
+    const {token} = useGlobalState().auth;
 
     useEffect(() => {
         const getVehicleList = async () => {
             try {
                 setVehicleLoadError(null);
-                const response = await axios.get(process.env.REACT_APP_BACKEND_ENDPOINT + '/vehicles');
-                setVehicles(response.data.data);
+                const response = await axios.get(process.env.REACT_APP_BACKEND_ENDPOINT + '/vehicles', {
+                    headers: {
+                        Authorization: `Bearer ${token}`
+                    }
+                });
+                if(response.data.success){
+                    setVehicles(response.data.data);
+                } else {
+                    throw new Error(response.data.error);
+                }                    
             } catch(err){
                 setVehicleLoadError(err.message);
             } finally {
@@ -22,8 +32,7 @@ const Dashboard = (props) => {
             }
         }
         getVehicleList();
-
-    }, []); //render only once
+    }, [token])
 
     const displayGetVehicle = () => {
         if(!isVehicleLoading){
@@ -76,10 +85,12 @@ const Dashboard = (props) => {
     }
 
     return (
-        <div className="container mt-4">
-            <h1>Vehicles</h1>
-            {displayGetVehicle()}
-        </div>
+        <React.Fragment>
+            <div className="container mt-4">
+                <h1>Vehicles</h1>
+                {displayGetVehicle()}
+            </div>
+        </React.Fragment>
     )
 }
 
