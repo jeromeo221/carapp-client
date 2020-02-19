@@ -1,8 +1,9 @@
 import React, { useState, useEffect, useRef, Fragment } from 'react';
 import axios from 'axios';
-import Modal from '../components/Modal';
-import Spinner from '../components/Spinner';
+import Modal from '../containers/Modal';
+import Spinner from '../containers/Spinner';
 import '../tableinput.css';
+import useGlobalState from '../hooks/useGlobalState';
 
 const Fuel = (props) => {
     
@@ -16,6 +17,7 @@ const Fuel = (props) => {
     const [deleteFuelId, setDeleteFuelId] = useState(null);
     const [toEditFuel, setToEditFuel] = useState(null);
     const [isLoadingFuel, setIsLoadingFuel] = useState(true);
+    const {token} = useGlobalState().auth;
         
     //Pagination
     const [page, setPage] = useState(1);
@@ -35,6 +37,9 @@ const Fuel = (props) => {
         const getFuel = async () => {
             try {
                 const response = await axios.get(process.env.REACT_APP_BACKEND_ENDPOINT + `/fuels`, {
+                    headers: {
+                        Authorization: `Bearer ${token}`
+                    },
                     params: {
                         vehicleId,
                         page,
@@ -45,7 +50,7 @@ const Fuel = (props) => {
                     setFuels(response.data.data);
                     setTotalPages(response.data.options.totalPages);
                 } else {
-                    setErrors(response.data.error);
+                    throw new Error(response.data.error);
                 }                
             } catch(err){
                 setErrors(err.message);
@@ -57,18 +62,22 @@ const Fuel = (props) => {
             getFuel();    
             setTransUpdate(false);  
         }        
-    }, [vehicleId, transUpdate, limit, page]);
+    }, [vehicleId, transUpdate, limit, page, token]);
 
     const confirmedDeleteFuel = async () => {
         try {
-            const result = await axios.delete(process.env.REACT_APP_BACKEND_ENDPOINT + `/fuels/${deleteFuelId}`);
+            const result = await axios.delete(process.env.REACT_APP_BACKEND_ENDPOINT + `/fuels/${deleteFuelId}`, {
+                headers: {
+                    Authorization: `Bearer ${token}`
+                }
+            });
             if(result.data.success){
                 setTransUpdate(true);
             } else {
-                setErrors(result.data.error);
+                throw new Error(result.data.error);
             }
         } catch(err){
-            setErrors(err);
+            setErrors(err.message);
         } finally {
             setDeleteFuelId(null);
         }
@@ -104,6 +113,10 @@ const Fuel = (props) => {
                 cost: costField.current.value,
                 isFull: isFullField.current.checked,
                 isMissed: isMissedField.current.checked
+            }, {
+                headers: {
+                    Authorization: `Bearer ${token}`
+                }
             });
             if(result.data.success){
                 setToEditFuel(null);
@@ -218,6 +231,10 @@ const Fuel = (props) => {
                 cost: costField.current.value,
                 isFull: isFullField.current.checked,
                 isMissed: isMissedField.current.checked
+            }, {
+                headers: {
+                    Authorization: `Bearer ${token}`
+                }
             });
             if(result.data.success){
                 setIsAddFuel(false);
@@ -283,17 +300,15 @@ const Fuel = (props) => {
             if(page === totalPages) upButton = " disabled";
 
             return (
-                
-                    <ul className="pagination pagination-sm" align="right">
-                        <li key="page-0" className={"page-item" + downButton}>
-                            <button className="page-link" onClick={() => handlePaginateButton(page-1)}>&laquo;</button>
-                        </li>
-                        {displayPaginationPages()}
-                        <li key={"page-"+ totalPages+1} className={"page-item" + upButton}>
-                            <button className="page-link" onClick={() => handlePaginateButton(page+1)}>&raquo;</button>
-                        </li>
-                    </ul>
-                
+                <ul className="pagination pagination-sm" align="right">
+                    <li key="page-0" className={"page-item" + downButton}>
+                        <button className="page-link" onClick={() => handlePaginateButton(page-1)}>&laquo;</button>
+                    </li>
+                    {displayPaginationPages()}
+                    <li key={"page-"+ totalPages+1} className={"page-item" + upButton}>
+                        <button className="page-link" onClick={() => handlePaginateButton(page+1)}>&raquo;</button>
+                    </li>
+                </ul>
             )
         } else {
             return (

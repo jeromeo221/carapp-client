@@ -1,11 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
+import useGlobalState from '../hooks/useGlobalState';
 
 const VehicleMaint = (props) => {
     
     const [id] = useState(props.match.params.id);
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState(null);
+    const {token} = useGlobalState().auth;
 
     const [make, setMake] = useState("");
     const [model, setModel] = useState("");
@@ -17,7 +19,11 @@ const VehicleMaint = (props) => {
             setError(null);
             setIsLoading(true);
             try {
-                const response = await axios.get(process.env.REACT_APP_BACKEND_ENDPOINT + `/vehicles/${id}`);
+                const response = await axios.get(process.env.REACT_APP_BACKEND_ENDPOINT + `/vehicles/${id}`, {
+                    headers: {
+                        Authorization: `Bearer ${token}`
+                    },
+                });
                 if(response.data.success){
                     setMake(response.data.data.make);
                     setModel(response.data.data.model);
@@ -34,7 +40,7 @@ const VehicleMaint = (props) => {
             
         }
         if(id) getVehicleDetails();
-    }, [id]);
+    }, [id, token]);
 
     const handleOk = async (e) => {
         e.preventDefault();
@@ -49,28 +55,36 @@ const VehicleMaint = (props) => {
         if(id){
             //Update Vehicle
             try {
-                const response = await axios.put(process.env.REACT_APP_BACKEND_ENDPOINT + `/vehicles/${id}`, {data});
+                const response = await axios.put(process.env.REACT_APP_BACKEND_ENDPOINT + `/vehicles/${id}`, {data}, {
+                    headers: {
+                        Authorization: `Bearer ${token}`
+                    },
+                });
                 if(response.data.success){
                     props.history.push(`/vehicles/${id}`);
                 } else {
-                    setError(response.data.error);
+                    throw new Error(response.data.error);
                 }
-            } catch(error){
-                throw error;
+            } catch(err){
+                setError(err.message);
             } finally {
                 setIsLoading(false);
             }
         } else {
             //Add Vehicle
             try {
-                const response = await axios.post(process.env.REACT_APP_BACKEND_ENDPOINT + `/vehicles/`, {data});
+                const response = await axios.post(process.env.REACT_APP_BACKEND_ENDPOINT + `/vehicles/`, {data}, {
+                    headers: {
+                        Authorization: `Bearer ${token}`
+                    },
+                });
                 if(response.data.success){
                     props.history.push(`/vehicles/${response.data.data._id}`);
                 } else {
-                    setError(response.data.error);
+                    throw new Error(response.data.error);
                 }
-            } catch(error){
-                throw error;
+            } catch(err){
+                setError(err.message);
             } finally {
                 setIsLoading(false);
             }
