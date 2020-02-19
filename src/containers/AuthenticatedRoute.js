@@ -4,6 +4,7 @@ import useGlobalState from '../hooks/useGlobalState';
 
 export default function AuthenticatedRoute({ component: C, ...rest }) {
     const {token} = useGlobalState().auth;
+    
     return (
         <Route
             {...rest}

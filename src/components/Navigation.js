@@ -22,11 +22,16 @@ const Navigation = (props) => {
                         </li>
                     </ul>
                     {token ? 
-                    (<ul className="navbar-nav">
+                    (<><ul className="navbar-nav">
+                        <li className="nav-item">
+                            <Link to="/user" className="nav-link">User</Link>
+                        </li>
+                    </ul>
+                    <ul className="navbar-nav">
                         <li className="nav-item">
                             <Link to="/logout" className="nav-link">Logout</Link>
                         </li>
-                    </ul>)
+                    </ul></>)
                     : 
                     (<><ul className="navbar-nav">
                         <li className="nav-item">

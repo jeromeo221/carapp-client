@@ -41,10 +41,10 @@ const useGlobalState = () => {
             }
         });
     }
-
+    
     return {
-        setAuth,
         auth: {...state.auth},
+        setAuth
     }
 }
 

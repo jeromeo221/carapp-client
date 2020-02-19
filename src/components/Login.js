@@ -1,6 +1,7 @@
 import React, {useState} from "react";
 import axios from 'axios';
 import useGlobalState from "../hooks/useGlobalState";
+import queryString from 'query-string';
 
 const Login = (props) => {
 
@@ -12,31 +13,20 @@ const Login = (props) => {
     const handleSubmit = async (e) => {
         e.preventDefault();
         try {
-            // fetch(`${process.env.REACT_APP_BACKEND_ENDPOINT}/login`, {
-            //     method: 'POST',
-            //     headers: {
-            //         "Content-Type": "application/json"
-            //     },
-            //     credentials: 'include',
-            //     body: JSON.stringify({
-            //         email,
-            //         password
-            //     })
-            // }).then((response) => {
-            //     console.log(response);
-            // }).then((data) => {
-            //     console.log(data);
-            // })
             const response = await axios.post(`${process.env.REACT_APP_BACKEND_ENDPOINT}/login`, {
                 email,
                 password
             }, {
                 withCredentials: true
             });
-            console.log(response);
             if(response.data.success){
                 globalState.setAuth({token: response.data.data.token});
-                props.history.push('/');
+                const parsed = queryString.parse(props.location.search);
+                if(parsed.redirect){
+                    props.history.push(parsed.redirect);
+                } else {
+                    props.history.push('/');
+                }                
             } else {
                 throw new Error(response.data.error);
             }
@@ -73,7 +63,8 @@ const Login = (props) => {
     }
 
     return (
-        <div>
+        <div className="mt-4">
+            <h2 className="text-center">Login</h2>
             {displayForm()}
         </div>        
     )
