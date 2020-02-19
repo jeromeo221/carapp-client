@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import useGlobalState from '../hooks/useGlobalState';
+import LoaderButton from '../containers/LoaderButton';
 
 const VehicleMaint = (props) => {
     
@@ -127,7 +128,7 @@ const VehicleMaint = (props) => {
                         value={name || ''} 
                         onChange={e => setName(e.target.value)}/>
                 </div>
-                <button className="btn btn-primary" type="submit">{id ? "Update" : "Add"}</button>
+                <LoaderButton isLoading={isLoading} type="submit">{id ? "Update" : "Add"}</LoaderButton>
                 <button className="btn btn-primary" onClick={handleCancel}>Cancel</button>
             </form>
         )
@@ -140,16 +141,10 @@ const VehicleMaint = (props) => {
             </div>
             {error ?
             (<div className="alert alert-dismissible alert-danger">
-                <button type="button" className="close" data-dismiss="alert">&times;</button>
+                <button type="button" className="close" onClick={() => setError(null)}>&times;</button>
                 {error}
             </div>) : null}
-            {!isLoading ?
-            displayForm() : ( 
-                <div>
-                    <h3>Processing...</h3>
-                    <button className="btn btn-primary" onClick={handleCancel}>Cancel</button>
-                </div>
-            )}
+            {displayForm()}
         </div>
     )
 }

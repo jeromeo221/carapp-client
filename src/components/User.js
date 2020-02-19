@@ -3,12 +3,14 @@ import Spinner from '../containers/Spinner';
 import axios from 'axios';
 import useGlobalState from '../hooks/useGlobalState';
 import jwt from 'jsonwebtoken';
+import LoaderButton from '../containers/LoaderButton';
 
 const User = (props) => {
 
     const [isLoading, setIsLoading] = useState(true);
+    const [isLoadingEdit, setIsLoadingEdit] = useState(false);
+    const [isLoadingPwdChange, setIsLoadingPwdChange] = useState(false);
     const [error, setError] = useState(null);
-    //const [userData, setUserData] = useState(null);
     const [passwordError, setPasswordError] = useState(null);
     const [passwordSuccess, setPasswordSuccess] = useState(null);
     const [editMode, setEditMode] = useState(false);
@@ -49,6 +51,7 @@ const User = (props) => {
     }, [token]);
 
     const handleChangePassword = async (e) => {
+        setIsLoadingPwdChange(true);
         e.preventDefault();
         try {
             const oldPassword = oldPasswordField.current.value;
@@ -83,10 +86,12 @@ const User = (props) => {
             oldPasswordField.current.value = '';
             newPasswordField.current.value = '';
             newPasswordField2.current.value = '';
+            setIsLoadingPwdChange(false);
         }
     }
 
     const handleEditUser = async (e) => {
+        setIsLoadingEdit(true);
         e.preventDefault();
         try {
             if(!token) return;
@@ -109,6 +114,7 @@ const User = (props) => {
             setError(err.message);
         } finally {
             setEditMode(false);
+            setIsLoadingEdit(false);
         }        
     }
 
@@ -138,7 +144,7 @@ const User = (props) => {
                                 value={email || ''} 
                                 onChange={e => setEmail(e.target.value)}/>
                         </div>
-                        <button type="submit" className="btn btn-primary btn-sm">Save</button>
+                        <LoaderButton isLoading={isLoadingEdit} className="btn-primary btn-sm" type="submit">Save</LoaderButton>
                         <button type="button" className="btn btn-primary btn-sm" onClick={() => setEditMode(false)}>Cancel</button>
                     </form>
                 </div>
@@ -151,11 +157,12 @@ const User = (props) => {
             )}            
             <div className="mt-4">
                 <h3>Change Password</h3>
-                {passwordError ? (<div className="alert alert-danger">
+                {passwordError ? (<div className="alert alert-dismissible alert-danger">
+                    <button type="button" className="close" onClick={() => setPasswordError(null)}>&times;</button>
                     {passwordError}
                 </div>) : null}
                 {passwordSuccess ? (<div className="alert alert-dismissible alert-success">
-                    <button type="button" className="close" data-dismiss="alert">&times;</button>
+                    <button type="button" className="close" onClick={() => setPasswordSuccess(null)}>&times;</button>
                     {passwordSuccess}
                 </div>) : null}
                 <form onSubmit={handleChangePassword} style={{width: '30%'}}>
@@ -164,7 +171,7 @@ const User = (props) => {
                         <input type="password" className="form-control form-control-sm mt-2" ref={newPasswordField} id="inputNewPassword" placeholder="Enter New Password" />
                         <input type="password" className="form-control form-control-sm mt-2" ref={newPasswordField2} id="inputNewPassword2" placeholder="Confirm New Password" />
                     </div>
-                    <button className="btn btn-primary" type="submit">Change</button>
+                    <LoaderButton isLoading={isLoadingPwdChange} type="submit">Change</LoaderButton>
                 </form>
             </div>
         </div>

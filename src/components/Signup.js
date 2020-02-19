@@ -1,8 +1,10 @@
 import React, { useState, useRef } from 'react';
 import axios from 'axios';
+import LoaderButton from '../containers/LoaderButton';
 
 const Signup = (props) => {
     const [error, setError] = useState(null);
+    const [isLoading, setIsLoading] = useState(false);
 
     //Signup fields
     const emailField = useRef(null);
@@ -11,8 +13,8 @@ const Signup = (props) => {
     const passwordField2 = useRef(null);
 
     const handleSignup = async (e) => {
+        setIsLoading(true);
         e.preventDefault();
-        setError(null);
         try {
             const email = emailField.current.value;
             const name = nameField.current.value;
@@ -31,12 +33,14 @@ const Signup = (props) => {
                 password2
             });
             if(response.data.success){
+                setIsLoading(false);
                 props.history.push('/login?signup=true');
             } else {
                 throw new Error(response.data.error);
             }
         } catch(err){
             setError(err.message);
+            setIsLoading(false);
         }
     }
 
@@ -52,7 +56,7 @@ const Signup = (props) => {
         <div className="container mt-4">
             {error ?
             (<div className="alert alert-dismissible alert-danger">
-                <button type="button" className="close" data-dismiss="alert">&times;</button>
+                <button type="button" className="close" onClick={() => setError(null)}>&times;</button>
                 {error}
             </div>) : null}
             <h2 className="text-center">Signup</h2>
@@ -73,7 +77,7 @@ const Signup = (props) => {
                     <label htmlFor="inputPassword2">Confirm Password</label>
                     <input type="password" className="form-control" ref={passwordField2} id="inputPassword2" placeholder="Confirm Password"/>
                 </div>
-                <button className="btn btn-primary" type="submit">Signup</button>
+                <LoaderButton isLoading={isLoading} type="submit">Signup</LoaderButton>
                 <button className="btn btn-primary" onClick={handleClear}>Clear</button>
             </form>
         </div>
