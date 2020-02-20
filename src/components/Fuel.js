@@ -4,6 +4,7 @@ import Modal from '../containers/Modal';
 import Spinner from '../containers/Spinner';
 import '../tableinput.css';
 import useGlobalState from '../hooks/useGlobalState';
+import LoaderButton from '../containers/LoaderButton';
 
 const Fuel = (props) => {
     
@@ -17,6 +18,8 @@ const Fuel = (props) => {
     const [deleteFuelId, setDeleteFuelId] = useState(null);
     const [toEditFuel, setToEditFuel] = useState(null);
     const [isLoadingFuel, setIsLoadingFuel] = useState(true);
+    const [isLoadingAddFuel, setIsLoadingAddFuel] = useState(false);
+    const [isLoadingEditFuel, setIsLoadingEditFuel] = useState(false);
     const {token} = useGlobalState().auth;
         
     //Pagination
@@ -104,6 +107,7 @@ const Fuel = (props) => {
     }, [isAddFuel])
 
     const saveEditFuel = async () => {
+        setIsLoadingEditFuel(true);
         try {
             const result = await axios.put(process.env.REACT_APP_BACKEND_ENDPOINT + `/fuels/${toEditFuel._id}`, {
                 vehicle: vehicleId,
@@ -126,6 +130,8 @@ const Fuel = (props) => {
             }
         } catch(err){
             setEditFuelErrors(err.message);
+        } finally {
+            setIsLoadingEditFuel(false);
         }
     }
 
@@ -140,7 +146,7 @@ const Fuel = (props) => {
                             (<tr>
                                 <td colSpan="10">
                                     <div className="alert alert-dismissible alert-danger">
-                                        <button type="button" className="close" data-dismiss="alert" onClick={() => setEditFuelErrors(null)}>&times;</button>
+                                        <button type="button" className="close" onClick={() => setEditFuelErrors(null)}>&times;</button>
                                         {editFuelErrors}
                                     </div>
                                 </td>    
@@ -176,7 +182,7 @@ const Fuel = (props) => {
                                 <td>{fuel.mileage && parseFloat(fuel.mileage).toFixed(2)}</td>
                                 <td>{fuel.pricekm && parseFloat(fuel.pricekm).toFixed(2)}</td>
                                 <td>
-                                    <button type="button" className="btn btn-primary btn-sm" onClick={saveEditFuel}>Save</button>
+                                    <LoaderButton isLoading={isLoadingEditFuel} onClick={saveEditFuel} className="btn-primary btn-sm">Save</LoaderButton>
                                     <button type="button" className="btn btn-primary btn-sm" onClick={() => setToEditFuel(null)}>Cancel</button>
                                 </td>
                             </tr>
@@ -219,6 +225,7 @@ const Fuel = (props) => {
     }
 
     const addFuel = async (e) => {
+        setIsLoadingAddFuel(true);
         e.preventDefault();
         setAddFuelErrors(null);
         try {
@@ -244,6 +251,8 @@ const Fuel = (props) => {
             }
         } catch(err){
             setAddFuelErrors(err.message);
+        } finally {
+            setIsLoadingAddFuel(false);
         }
     }
 
@@ -251,36 +260,38 @@ const Fuel = (props) => {
         return (
             <tr>
                 <td colSpan="10">
-                    <b>Add Fuel</b>
-                    <div className="form-group" style={{width: '50%'}}>
-                        <label className="col-form-label" htmlFor="inputDate">Date</label>
-                        <input type="date" className="form-control form-control-sm" ref={dateField} id="inputDate" />
-                        <label className="col-form-label" htmlFor="inputOdometer">Odometer</label>
-                        <input type="number" className="form-control form-control-sm" ref={odometerField} id="inputOdometer" />
-                        <label className="col-form-label" htmlFor="inputVolume">Volume</label>
-                        <input type="text" className="form-control form-control-sm" ref={volumeField} id="inputVolume" />
-                        <label className="col-form-label" htmlFor="inputPrice">Price</label>
-                        <input type="text" className="form-control form-control-sm" ref={priceField} id="inputPrice" />
-                        <label className="col-form-label" htmlFor="inputCost">Cost</label>
-                        <input type="text" className="form-control form-control-sm" ref={costField} id="inputCost" />
-                    </div>
-                    <div className="form-group">
-                        <div className="custom-control custom-checkbox">
-                            <input type="checkbox" className="custom-control-input" ref={isFullField} id="isFullCheck"/>
-                            <label className="custom-control-label" htmlFor="isFullCheck">Full Tank</label>
+                    <form onSubmit={addFuel}>
+                        <b>Add Fuel</b>
+                        <div className="form-group" style={{width: '50%'}}>
+                            <label className="col-form-label" htmlFor="inputDate">Date</label>
+                            <input type="date" className="form-control form-control-sm" ref={dateField} id="inputDate" />
+                            <label className="col-form-label" htmlFor="inputOdometer">Odometer</label>
+                            <input type="number" className="form-control form-control-sm" ref={odometerField} id="inputOdometer" />
+                            <label className="col-form-label" htmlFor="inputVolume">Volume</label>
+                            <input type="text" className="form-control form-control-sm" ref={volumeField} id="inputVolume" />
+                            <label className="col-form-label" htmlFor="inputPrice">Price</label>
+                            <input type="text" className="form-control form-control-sm" ref={priceField} id="inputPrice" />
+                            <label className="col-form-label" htmlFor="inputCost">Cost</label>
+                            <input type="text" className="form-control form-control-sm" ref={costField} id="inputCost" />
                         </div>
-                        <div className="custom-control custom-checkbox">
-                            <input type="checkbox" className="custom-control-input" ref={isMissedField} id="isMissedFillCheck"/>
-                            <label className="custom-control-label" htmlFor="isMissedFillCheck">Missed Fillup</label>
+                        <div className="form-group">
+                            <div className="custom-control custom-checkbox">
+                                <input type="checkbox" className="custom-control-input" ref={isFullField} id="isFullCheck"/>
+                                <label className="custom-control-label" htmlFor="isFullCheck">Full Tank</label>
+                            </div>
+                            <div className="custom-control custom-checkbox">
+                                <input type="checkbox" className="custom-control-input" ref={isMissedField} id="isMissedFillCheck"/>
+                                <label className="custom-control-label" htmlFor="isMissedFillCheck">Missed Fillup</label>
+                            </div>
                         </div>
-                    </div>
-                    {addFuelErrors ?
-                    (<div className="alert alert-dismissible alert-danger">
-                        <button type="button" className="close" data-dismiss="alert">&times;</button>
-                        {addFuelErrors}
-                    </div>) : null}
-                    <button type="submit" className="btn btn-primary btn-sm" onClick={addFuel}>Add</button>
-                    <button type="submit" className="btn btn-danger btn-sm" onClick={() => setIsAddFuel(false)}>Cancel</button>
+                        {addFuelErrors ?
+                        (<div className="alert alert-dismissible alert-danger">
+                            <button type="button" className="close" onClick={() => setAddFuelErrors(null)}>&times;</button>
+                            {addFuelErrors}
+                        </div>) : null}
+                        <LoaderButton isLoading={isLoadingAddFuel} className="btn-primary btn-sm" type="submit">Add</LoaderButton>
+                        <button type="submit" className="btn btn-danger btn-sm" onClick={() => setIsAddFuel(false)}>Cancel</button>
+                    </form>
                 </td>
             </tr>
         )
@@ -362,7 +373,7 @@ const Fuel = (props) => {
             <div className="mt-2 row">
                 {errors ?
                 (<div className="alert alert-dismissible alert-danger">
-                    <button type="button" className="close" data-dismiss="alert">&times;</button>
+                    <button type="button" className="close" onClick={() => setErrors(null)}>&times;</button>
                     {errors}
                 </div>) : null}
                 {!isLoadingFuel ? 
