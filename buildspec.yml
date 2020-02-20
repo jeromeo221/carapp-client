@@ -12,11 +12,11 @@ phases:
             # create staging deployment package
             # mkdir artifacts/stg
             - pwd
-            - cd carapp
-            - pwd
-            - echo Building react application...
-            - printenv > .env.stg
-            - npm run build:stg
+            - ls -la -v
+            #- pwd
+            #- echo Building react application...
+            #- printenv > .env.stg
+            #- npm run build:stg
 #    post_build:
 #        commands:
 #            - serverless remove --stage test -v
