@@ -11,6 +11,9 @@ phases:
             # mkdir artifacts
             # create staging deployment package
             # mkdir artifacts/stg
+            - pwd
+            - cd carapp
+            - pwd
             - echo Building react application...
             - printenv > .env.stg
             - npm run build:stg
