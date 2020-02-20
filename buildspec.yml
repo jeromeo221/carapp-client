@@ -3,9 +3,8 @@ version: 0.2
 phases: 
     install:
         runtime-versions:
-            nodejs: 10
+            nodejs: 12
         commands:
-            - npm i react-scripts
             - npm install            
     build:
         commands:
@@ -13,8 +12,8 @@ phases:
             # create staging deployment package
             # mkdir artifacts/stg
             - echo Building react application...
-            - printenv
-            - react-scripts build
+            - printenv > .env.stg
+            - npm run build:stg
 #    post_build:
 #        commands:
 #            - serverless remove --stage test -v
