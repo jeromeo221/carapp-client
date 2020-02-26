@@ -11,7 +11,7 @@ phases:
     pre_build:
         commands:
             - echo install dependencies...
-            - npm install -g react react-scripts env-cmd
+            - npm install -g react@16.12.0 react-scripts@3.2.0
             - npm install
     build:
         commands:
