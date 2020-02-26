@@ -11,12 +11,13 @@ phases:
     pre_build:
         commands:
             - echo install dependencies...
+            - npm install -g react react-scripts env-cmd
             - npm install
     build:
         commands:
             - echo Building react application...
             - printenv > .env.stg
-            - npm run build:stg
+            - env-cmd --file .env.stg react-scripts build
 
 artifacts:
   files:
