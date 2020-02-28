@@ -12,9 +12,8 @@ phases:
             - yarn
     build:
         commands:
-            - echo Building react application...
+            # Build react application
             - yarn run env
-            #- env-cmd --file .env.stg react-scripts build
             - yarn build
 
 artifacts:
