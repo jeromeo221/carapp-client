@@ -59,7 +59,7 @@ const Dashboard = (props) => {
         return vehicles.map(vehicle => {
             return (
                 <div key={vehicle._id} className="col-sm-12 col-md-6 col-lg-4 mt-2">
-                    <div className="card">
+                    <div className="card" style={{minHeight: '180px'}}>
                         <div className="card-body">
                             <h4 className="card-title">{vehicle.year} {vehicle.model}</h4>
                             <h6 className="card-subtitle mb-2 text-muted">{vehicle.make}</h6>
