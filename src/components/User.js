@@ -1,9 +1,9 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useContext } from 'react';
 import Spinner from '../containers/Spinner';
 import axios from 'axios';
-import useGlobalState from '../hooks/useGlobalState';
 import jwt from 'jsonwebtoken';
 import LoaderButton from '../containers/LoaderButton';
+import { AuthContext } from '../contexts/AuthContext';
 
 const User = (props) => {
 
@@ -14,7 +14,7 @@ const User = (props) => {
     const [passwordError, setPasswordError] = useState(null);
     const [passwordSuccess, setPasswordSuccess] = useState(null);
     const [editMode, setEditMode] = useState(false);
-    const {token} = useGlobalState().auth;
+    const {token} = useContext(AuthContext);
 
     //Change User fields
     const [name, setName] = useState(null);

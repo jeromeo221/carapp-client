@@ -1,14 +1,14 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useContext } from 'react';
 import axios from 'axios';
-import useGlobalState from '../hooks/useGlobalState';
 import LoaderButton from '../containers/LoaderButton';
+import { AuthContext } from '../contexts/AuthContext';
 
 const VehicleMaint = (props) => {
     
     const [id] = useState(props.match.params.id);
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState(null);
-    const {token} = useGlobalState().auth;
+    const {token} = useContext(AuthContext);
 
     const [make, setMake] = useState("");
     const [model, setModel] = useState("");

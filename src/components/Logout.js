@@ -1,13 +1,13 @@
-import React, { useState, useEffect, Fragment } from 'react';
-import useGlobalState from "../hooks/useGlobalState";
+import React, { useState, Fragment, useContext, useEffect } from 'react';
 import axios from 'axios';
 import Spinner from '../containers/Spinner';
+import { AuthContext } from '../contexts/AuthContext';
 
 const Logout = () => {
 
-    const globalState = useGlobalState();
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState(null);
+    const {token, declareToken} = useContext(AuthContext);
 
     useEffect(() => {
         const performLogout = async () => {
@@ -16,7 +16,7 @@ const Logout = () => {
                     withCredentials: true
                 });
                 if(response.data.success){
-                    globalState.setAuth('');
+                    declareToken(null);
                 }
             } catch(err){
                 setError(err.message);
@@ -24,9 +24,8 @@ const Logout = () => {
                 setIsLoading(false);
             }
         }
-        performLogout();
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, []);
+        if(token) performLogout();
+    }, [token, declareToken]);    
 
     if(isLoading){
         return (

@@ -1,8 +1,8 @@
-import React, {useState} from "react";
+import React, {useState, useContext} from "react";
 import axios from 'axios';
-import useGlobalState from "../hooks/useGlobalState";
 import queryString from 'query-string';
 import LoaderButton from '../containers/LoaderButton';
+import { AuthContext } from "../contexts/AuthContext";
 
 const Login = (props) => {
 
@@ -10,7 +10,7 @@ const Login = (props) => {
     const [password, setPassword] = useState("");
     const [errors, setErrors] = useState(null);
     const [isLoading, setIsLoading] = useState(false);
-    const globalState = useGlobalState();
+    const {declareToken} = useContext(AuthContext);
 
     const handleSubmit = async (e) => {
         setIsLoading(true);
@@ -25,7 +25,7 @@ const Login = (props) => {
                 withCredentials: true
             });
             if(response.data.success){
-                globalState.setAuth({token: response.data.data.token});
+                declareToken(response.data.data.token);
                 const parsed = queryString.parse(props.location.search);
                 setIsLoading(false);
                 if(parsed.redirect){
