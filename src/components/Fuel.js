@@ -1,42 +1,28 @@
-import React, { useState, useEffect, useRef, Fragment } from 'react';
+import React, { useState, useEffect, Fragment, useContext } from 'react';
 import axios from 'axios';
 import Modal from '../containers/Modal';
 import Spinner from '../containers/Spinner';
 import '../tableinput.css';
-import useGlobalState from '../hooks/useGlobalState';
-import LoaderButton from '../containers/LoaderButton';
+import { AuthContext } from '../contexts/AuthContext';
+import FuelAdd from './FuelAdd';
+import FuelRow from './FuelRow';
+import FuelRowEdit from './FuelRowEdit';
 
 const Fuel = (props) => {
     
     const [vehicleId] = useState(props.vehicleId);
     const [fuels, setFuels] = useState(null);
-    const [isAddFuel, setIsAddFuel] = useState(0);
     const [errors, setErrors] = useState(null);
-    const [addFuelErrors, setAddFuelErrors] = useState(null);
-    const [editFuelErrors, setEditFuelErrors] = useState(null);
     const [transUpdate, setTransUpdate] = useState(true);
     const [deleteFuelId, setDeleteFuelId] = useState(null);
     const [toEditFuel, setToEditFuel] = useState(null);
     const [isLoadingFuel, setIsLoadingFuel] = useState(true);
-    const [isLoadingAddFuel, setIsLoadingAddFuel] = useState(false);
-    const [isLoadingEditFuel, setIsLoadingEditFuel] = useState(false);
-    const {token} = useGlobalState().auth;
+    const {token} = useContext(AuthContext);
         
     //Pagination
     const [page, setPage] = useState(1);
     const [limit] = useState(10);
     const [totalPages, setTotalPages] = useState(null);
-
-    //Fuel Fields
-    const dateField = useRef(null);
-    const timeField = useRef(null);
-    const odometerField = useRef(null);
-    const volumeField = useRef(null);
-    const priceField = useRef(null);
-    const costField = useRef(null);
-    const isFullField = useRef(null);
-    const isMissedField = useRef(null);
-    const isEstOdoField = useRef(null);
 
     useEffect(() => {
         const getFuel = async () => {
@@ -88,249 +74,28 @@ const Fuel = (props) => {
         }
     }
 
-    useEffect(() => {
-        if(toEditFuel){
-            setIsAddFuel(false);
-            setEditFuelErrors(null);
-            //Edit some row
-            odometerField.current.value = toEditFuel.odometer;
-            volumeField.current.value = toEditFuel.volume;
-            priceField.current.value = toEditFuel.price;
-            costField.current.value = toEditFuel.cost;
-            isFullField.current.checked = toEditFuel.isFull;
-            isMissedField.current.checked = toEditFuel.isMissed;
-            isEstOdoField.current.checked = toEditFuel.isEstOdo;
-        }        
-    }, [toEditFuel])
-
-    useEffect(() => {
-        if(isAddFuel){
-            setToEditFuel(null);
-        }
-    }, [isAddFuel])
-
-    const saveEditFuel = async () => {
-        setIsLoadingEditFuel(true);
-        try {
-            const result = await axios.put(process.env.REACT_APP_BACKEND_ENDPOINT + `/fuels/${toEditFuel._id}`, {
-                vehicle: vehicleId,
-                odometer: odometerField.current.value,
-                volume: volumeField.current.value,
-                price: priceField.current.value,
-                cost: costField.current.value,
-                isFull: isFullField.current.checked,
-                isMissed: isMissedField.current.checked,
-                isEstOdo: isEstOdoField.current.checked
-            }, {
-                headers: {
-                    Authorization: `Bearer ${token}`
-                }
-            });
-            if(result.data.success){
-                setToEditFuel(null);
-                setTransUpdate(true);
-            } else {
-                setEditFuelErrors(result.data.error);
-            }
-        } catch(err){
-            setEditFuelErrors(err.message);
-        } finally {
-            setIsLoadingEditFuel(false);
-        }
-    }
-
     const displayFuelList = () => {
         if(fuels){
             return fuels.map((fuel) => {
                 return (
                     <Fragment key={fuel._id}>
                         {(toEditFuel && fuel._id === toEditFuel._id) ? (
-                        <Fragment>
-                            {editFuelErrors ?
-                            (<tr>
-                                <td colSpan="11">
-                                    <div className="alert alert-dismissible alert-danger">
-                                        <button type="button" className="close" onClick={() => setEditFuelErrors(null)}>&times;</button>
-                                        {editFuelErrors}
-                                    </div>
-                                </td>    
-                            </tr>) : null}                        
-                            <tr className="table-primary">
-                                <td>
-                                    {new Date(fuel.date).toLocaleString()}
-                                </td>
-                                <td>
-                                    <div><input type="text" className="input-table-row" ref={odometerField}/></div>
-                                </td>
-                                <td>
-                                    <div><input type="text" className="input-table-row" ref={volumeField}/></div>
-                                </td>
-                                <td>
-                                    <div><input type="text" className="input-table-row" ref={priceField}/></div>
-                                </td>
-                                <td>
-                                    <div><input type="text" className="input-table-row" ref={costField}/></div>
-                                </td>
-                                <td align="center">
-                                    <div className="custom-control custom-checkbox">
-                                        <input type="checkbox" className="custom-control-input input-table-row" id="isFullEditCheck" ref={isFullField}/>
-                                        <label className="custom-control-label" htmlFor="isFullEditCheck"/>
-                                    </div>                                    
-                                </td>
-                                <td align="center">
-                                    <div className="custom-control custom-checkbox">
-                                        <input type="checkbox" className="custom-control-input input-table-row" id="isMissedEditCheck" ref={isMissedField}/>
-                                        <label className="custom-control-label" htmlFor="isMissedEditCheck"/>
-                                    </div>
-                                </td>
-                                <td align="center">
-                                    <div className="custom-control custom-checkbox">
-                                        <input type="checkbox" className="custom-control-input input-table-row" id="isEstOdoEditCheck" ref={isEstOdoField}/>
-                                        <label className="custom-control-label" htmlFor="isEstOdoEditCheck"/>
-                                    </div>            
-                                </td>
-                                <td>{fuel.mileage && parseFloat(fuel.mileage).toFixed(2)}</td>
-                                <td>{fuel.pricekm && parseFloat(fuel.pricekm).toFixed(2)}</td>
-                                <td>
-                                    <LoaderButton isLoading={isLoadingEditFuel} onClick={saveEditFuel} className="btn-primary btn-sm">Save</LoaderButton>
-                                    <button type="button" className="btn btn-primary btn-sm" onClick={() => setToEditFuel(null)}>Cancel</button>
-                                </td>
-                            </tr>
-                        </Fragment>
+                            <FuelRowEdit 
+                                toEditFuel={toEditFuel} 
+                                setToEditFuel={setToEditFuel} 
+                                setTransUpdate={setTransUpdate}
+                            />
                         ) : (
-                        <tr className="table-primary">
-                            <td>
-                                {new Date(fuel.date).toLocaleString()}
-                            </td>
-                            <td>
-                                {fuel.odometer}
-                            </td>
-                            <td>
-                                {parseFloat(fuel.volume).toFixed(2)}
-                            </td>
-                            <td>
-                                {parseFloat(fuel.price).toFixed(2)}
-                            </td>
-                            <td>
-                                ${parseFloat(fuel.cost).toFixed(2)}
-                            </td>
-                            <td align="center">
-                                {fuel.isFull && 'Y' }
-                            </td>
-                            <td align="center">
-                                {fuel.isMissed && 'Y' }
-                            </td>
-                            <td align="center">
-                                {fuel.isEstOdo && 'Y' }
-                            </td>
-                            <td>{fuel.mileage && parseFloat(fuel.mileage).toFixed(2)}</td>
-                            <td>{fuel.pricekm && parseFloat(fuel.pricekm).toFixed(2)}</td>
-                            <td>
-                                <button type="button" className="btn btn-primary btn-sm" onClick={() => setToEditFuel(fuel)}>Edit</button>
-                                <button type="button" className="btn btn-danger btn-sm" data-toggle="modal" data-target="#fuelDeleteModal" onClick={() => setDeleteFuelId(fuel._id)}>Delete</button>
-                            </td>
-                        </tr>
+                            <FuelRow 
+                                fuel={fuel}
+                                setToEditFuel={setToEditFuel}
+                                setDeleteFuelId={setDeleteFuelId}
+                            />
                         )}                            
                     </Fragment>
                 )
             });
         } 
-    }
-
-    const addFuel = async (e) => {
-        setIsLoadingAddFuel(true);
-        e.preventDefault();
-        setAddFuelErrors(null);
-        try {
-            //Combine Date and time field
-            console.log(dateField.current.value);
-            console.log(timeField.current.value);
-
-            let timeValue = timeField.current.value;
-            if(!timeValue) timeValue = '12:00'
-
-            const dateTime = new Date(dateField.current.value + ' ' + timeValue);
-            console.log(dateTime);
-
-            const result = await axios.post(process.env.REACT_APP_BACKEND_ENDPOINT + `/fuels`, {
-                vehicle: vehicleId,
-                date: dateTime,
-                odometer: odometerField.current.value,
-                volume: volumeField.current.value,
-                price: priceField.current.value,
-                cost: costField.current.value,
-                isFull: isFullField.current.checked,
-                isMissed: isMissedField.current.checked,
-                isEstOdo: isEstOdoField.current.checked
-            }, {
-                headers: {
-                    Authorization: `Bearer ${token}`
-                }
-            });
-            if(result.data.success){
-                setIsAddFuel(false);
-                setTransUpdate(true);
-            } else {
-                setAddFuelErrors(result.data.error);
-            }
-        } catch(err){
-            setAddFuelErrors(err.message);
-        } finally {
-            setIsLoadingAddFuel(false);
-        }
-    }
-
-    const displayAddFuel = () => {
-        return (
-            <tr>
-                <td colSpan="11">
-                    <form onSubmit={addFuel}>
-                        <b>Add Fuel</b>
-                        <div className="form-group" style={{width: '50%'}}>
-                            <label className="col-form-label" htmlFor="inputDate">Date</label>
-                            <input type="date" className="form-control form-control-sm" ref={dateField} id="inputDate" />
-                            <label className="col-form-label" htmlFor="inputTime">Time</label>
-                            <input type="time" className="form-control form-control-sm" ref={timeField} id="inputTime" />
-                            <label className="col-form-label" htmlFor="inputOdometer">Odometer</label>
-                            <input type="number" className="form-control form-control-sm" ref={odometerField} id="inputOdometer" />
-                            <label className="col-form-label" htmlFor="inputVolume">Volume</label>
-                            <input type="text" className="form-control form-control-sm" ref={volumeField} id="inputVolume" />
-                            <label className="col-form-label" htmlFor="inputPrice">Price</label>
-                            <input type="text" className="form-control form-control-sm" ref={priceField} id="inputPrice" />
-                            <label className="col-form-label" htmlFor="inputCost">Cost</label>
-                            <input type="text" className="form-control form-control-sm" ref={costField} id="inputCost" />
-                        </div>
-                        <div className="form-group">
-                            <div className="custom-control custom-checkbox">
-                                <input type="checkbox" className="custom-control-input" ref={isFullField} id="isFullCheck"/>
-                                <label className="custom-control-label" htmlFor="isFullCheck">Full Tank</label>
-                            </div>
-                            <div className="custom-control custom-checkbox">
-                                <input type="checkbox" className="custom-control-input" ref={isMissedField} id="isMissedFillCheck"/>
-                                <label className="custom-control-label" htmlFor="isMissedFillCheck">Missed Fillup</label>
-                            </div>
-                            <div className="custom-control custom-checkbox">
-                                <input type="checkbox" className="custom-control-input" ref={isEstOdoField} id="isEstOdoCheck"/>
-                                <label className="custom-control-label" htmlFor="isEstOdoCheck">Odometer Estimated</label>
-                            </div>
-                        </div>
-                        {addFuelErrors ?
-                        (<div className="alert alert-dismissible alert-danger">
-                            <button type="button" className="close" onClick={() => setAddFuelErrors(null)}>&times;</button>
-                            {addFuelErrors}
-                        </div>) : null}
-                        <LoaderButton isLoading={isLoadingAddFuel} className="btn-primary btn-sm" type="submit">Add</LoaderButton>
-                        <button type="submit" className="btn btn-danger btn-sm" onClick={() => setIsAddFuel(false)}>Cancel</button>
-                    </form>
-                </td>
-            </tr>
-        )
-    }
-
-    const handleDisplayFuelAdd = (e) => {
-        e.preventDefault();
-        setIsAddFuel(true);
-        setAddFuelErrors(null);
     }
 
     const displayPagination = () => {
@@ -426,12 +191,7 @@ const Fuel = (props) => {
                         </thead>
                         <tbody>
                             {displayFuelList()}
-                            {isAddFuel ? (displayAddFuel()) : null}
-                            {!isAddFuel ? (<tr className="table-primary">
-                                <td align="left" colSpan="11">
-                                    <button type="button" className="btn btn-primary btn-sm" onClick={handleDisplayFuelAdd}>+</button>
-                                </td>
-                            </tr>) : null}
+                            <FuelAdd vehicleId={vehicleId} setTransUpdate={setTransUpdate}/>
                         </tbody>
                     </table>
                 </Fragment>) :

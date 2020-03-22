@@ -1,15 +1,15 @@
-import React, { useState, Fragment, useEffect } from 'react';
+import React, { useState, Fragment, useEffect, useContext } from 'react';
 import { Link } from 'react-router-dom';
 import axios from 'axios';
 import Spinner from '../containers/Spinner';
-import useGlobalState from '../hooks/useGlobalState';
+import { AuthContext } from '../contexts/AuthContext';
 
 const Dashboard = (props) => {
 
     const [isVehicleLoading, setIsVehicleLoading] = useState(true);
     const [vehicleLoadError, setVehicleLoadError] = useState(null);
     const [vehicles, setVehicles] = useState(null);
-    const {token} = useGlobalState().auth;
+    const {token} = useContext(AuthContext);
 
     useEffect(() => {
         const getVehicleList = async () => {

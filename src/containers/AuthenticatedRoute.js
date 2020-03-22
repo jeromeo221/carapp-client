@@ -1,9 +1,9 @@
-import React from "react";
+import React, { useContext } from "react";
 import { Route, Redirect } from "react-router-dom";
-import useGlobalState from '../hooks/useGlobalState';
+import { AuthContext } from "../contexts/AuthContext";
 
 export default function AuthenticatedRoute({ component: C, ...rest }) {
-    const {token} = useGlobalState().auth;
+    const {token} = useContext(AuthContext);
     
     return (
         <Route

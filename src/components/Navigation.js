@@ -1,9 +1,9 @@
-import React from 'react';
+import React, { useContext } from 'react';
 import { Link } from 'react-router-dom';
-import useGlobalState from '../hooks/useGlobalState';
+import { AuthContext } from '../contexts/AuthContext';
 
 const Navigation = (props) => {
-    const {token} = useGlobalState().auth;
+    const {token} = useContext(AuthContext);
     return(
         <div>
             <nav className="navbar navbar-expand-lg navbar-dark bg-dark">
