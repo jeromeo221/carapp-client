@@ -1,4 +1,13 @@
+# Car Application
+
+The front end web component of this application to maintain fuel transactions of a certain vehicle in order to determine the efficiency and cost. The user needs to login in order the view and maintain the details of both vehicle and fuel objects.
+
 This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+
+## Future Plans
+* Allow user to remove its account
+* Organize components folder
+* Convert to TypeScript
 
 ## Available Scripts
 
